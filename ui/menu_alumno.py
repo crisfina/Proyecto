@@ -1,3 +1,4 @@
+#intentar hacer un apaño para mostrar curso
 #al separar los menús he duplicado seleccionar curso en menu libro o alumno, encontrar lo que llama al duplicado y cambiar
 from ui.menu import Menu
 from clases.alumno import Alumno
@@ -117,7 +118,7 @@ class MenuAlumno(Menu):
 
         if curso_str:
             alumno = Alumno(nie=nie, nombre=nombre, apellidos=apellidos, tramo=tramo, bilingue=bilingue, curso=Curso(anio=curso_str.split('-')[0], curso=curso_str.split('-')[1]))
-            if self.database_manager.insertar_alumno(alumno.nie, alumno.nombre, alumno.apellidos, alumno.tramo, alumno.bilingue, alumno.curso.curso):
+            if self.database_alumno.insertar_alumno(alumno.nie, alumno.nombre, alumno.apellidos, alumno.tramo, alumno.bilingue, alumno.curso.curso):
                 print(f"Alumno '{alumno.nombre} {alumno.apellidos}' creado con NIE '{alumno.nie}' en el curso '{alumno.curso}'.")
             else:
                 print("Error al crear el alumno.")
@@ -137,8 +138,6 @@ class MenuAlumno(Menu):
             print(f"Apellidos: {alumno['apellidos']}")
             print(f"Tramo: {tramo_str}")
             print(f"Bilingüe: {bilingue_str}")
-            # Aquí se puede buscar el curso asociado al alumno si estuviera en la tabla alumnos
-            # o si se gestiona en la tabla de préstamos.
             print("Curso: Información del curso no disponible en esta vista.")
         else:
             print(f"No se encontró ningún alumno con el NIE '{nie}'.")

@@ -5,9 +5,6 @@ from ui.menu import Menu
 from ui.menu_alumno import MenuAlumno
 from ui.menu_libro import MenuLibro
 from ui.menu_prestamo import MenuPrestamo
-from database.gestion import GestionBBDD
-from database.gestion_libro import GestionLibro
-from database.gestion_alumno import GestionAlumno
 #import getpass - intentar hacer que funcione, si no, dejarlo como está
 import bcrypt
 import os
