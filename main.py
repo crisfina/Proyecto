@@ -27,13 +27,15 @@ def crear_usuario_inicial(db_manager):
 if __name__ == "__main__":
     print("Iniciando...")
     db_manager = GestionBBDD()
-    db_alumno = GestionAlumno()
-    db_libro = GestionLibro()
-    db_prestamo = GestionPrestamo()
-    db_materias_cursos = GestionMateriasCursos()
+
     #print("GestionBBDD inicializado")
     if db_manager.conexion:
         print("Conexión a la base de datos exitosa")
+        db_alumno = GestionAlumno(db_manager)
+        db_libro = GestionLibro(db_manager)
+        db_prestamo = GestionPrestamo(db_manager)
+        db_materias_cursos = GestionMateriasCursos(db_manager)
+
         crear_usuario_inicial(db_manager)
         print("Usuario inicial correcto")
         menu_principal = MenuPrincipal(db_manager, db_libro, db_alumno, db_prestamo, db_materias_cursos)

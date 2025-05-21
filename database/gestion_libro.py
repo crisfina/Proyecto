@@ -8,18 +8,20 @@ from clases.materia import Materia
 
 
 class GestionLibro(GestionBBDD):
+    def __init__(self, db_manager: GestionBBDD):
+        self.db_manager = db_manager
+
     def seleccionar_libro(self, isbn):
-        super.__init__()
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return None
         try:
-            self.cursor.execute(
+            self.db_manager.cursor.execute(
                 "SELECT l.*, m.nombre as materia_nombre, m.departamento as materia_departamento, \
                 c.nivel as curso_nivel, c.curso as curso_completo FROM libros l JOIN materias m \
-                ON l.id_materia = m.id_materia JOIN cursos c ON l.id_curso = c.curso WHERE l.isbn = %s",
+                ON l.id_materia = m.id JOIN cursos c ON l.id_curso = c.curso WHERE l.isbn = %s",
                 (isbn,))
-            libro_data = self.cursor.fetchone()
+            libro_data = self.db_manager.cursor.fetchone()
             if libro_data:
                 materia = Materia(id_materia=libro_data['id_materia'], nombre=libro_data['materia_nombre'],
                                   departamento=libro_data['materia_departamento'])
@@ -38,22 +40,22 @@ class GestionLibro(GestionBBDD):
 
 
     def show_libros(self):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return
         try:
-            self.cursor.execute(
+            self.db_manager.cursor.execute(
                 "SELECT l.*, m.nombre as materia_nombre, c.nivel as curso_nivel, c.curso as curso_completo \
-                FROM libros l JOIN materias m ON l.id_materia = m.id_materia \
+                FROM libros l JOIN materias m ON l.id_materia = m.id \
                 JOIN cursos c ON l.id_curso = c.curso")
-            return self.cursor.fetchall()
+            return self.db_manager.cursor.fetchall()
         except pymysql_error.Error as err:
             print(f"Error al mostrar libros: {err}")
             return
 
 
     def modificar_libro(self, isbn, titulo=None, autor=None, numero_ejemplares=None):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
@@ -72,40 +74,40 @@ class GestionLibro(GestionBBDD):
             sql += ", ".join(updates)
             sql += " WHERE isbn = %s"
             values.append(isbn)
-            self.cursor.execute(sql, tuple(values))
-            self.conexion.commit()
-            return self.cursor.rowcount > 0
+            self.db_manager.cursor.execute(sql, tuple(values))
+            self.db_manager.conexion.commit()
+            return self.db_manager.cursor.rowcount > 0
         except pymysql_error.Error as err:
             print(f"Error al modificar libro: {err}")
-            self.conexion.rollback()
+            self.db_manager.conexion.rollback()
             return False
 
 
     def del_libro(self, isbn):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
-            self.cursor.execute("DELETE FROM libros WHERE isbn = %s", (isbn,))
-            self.conexion.commit()
-            return self.cursor.rowcount > 0
+            self.db_manager.cursor.execute("DELETE FROM libros WHERE isbn = %s", (isbn,))
+            self.db_manager.conexion.commit()
+            return self.db_manager.cursor.rowcount > 0
         except pymysql_error.Error as err:
             print(f"Error al borrar libro: {err}")
-            self.conexion.rollback()
+            self.db_manager.conexion.rollback()
             return False
 
     def insertar_libro(self, isbn, titulo, autor, numero_ejemplares, materia_id, curso_id):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
             sql = "INSERT INTO libros (isbn, titulo, autor, numero_ejemplares, id_materia, id_curso) \
             VALUES (%s, %s, %s, %s, %s, %s)"
             val = (isbn, titulo, autor, numero_ejemplares, materia_id, curso_id)
-            self.cursor.execute(sql, val)
-            self.conexion.commit()
+            self.db_manager.cursor.execute(sql, val)
+            self.db_manager.conexion.commit()
             return True
         except pymysql_error.Error as err:
             print(f"Error al insertar libro: {err}")
-            self.conexion.rollback()
+            self.db_manager.conexion.rollback()
             return False

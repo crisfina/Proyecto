@@ -1,81 +1,51 @@
-from clases.curso import Curso
 from clases.enum_tramos import Tramos
+from database.gestion_alumno import GestionAlumno
 
 class Alumno:
-    def __init__(self, nie, nombre, apellidos, tramo=Tramos.NADA, bilingue=False, curso=None):
+    def __init__(self, nie: str, nombre: str, apellidos: str,
+                 tramo: Tramos = Tramos.NADA, bilingue: bool = False):
         self.nie = nie
         self.nombre = nombre
         self.apellidos = apellidos
         self.tramo = tramo
         self.bilingue = bilingue
-        self.curso = curso if curso else Curso()
+
 
     def __str__(self):
-        tramo_str = self.tramo.name.replace("TRAMO_", "Tramo ") if self.tramo != Tramos.NADA else "Ninguno"
-        bilingue_str = "Sí" if self.bilingue else "No"
-        curso_str = str(self.curso) if self.curso else "Sin curso asignado"
-        return f"NIE: {self.nie}, Nombre: {self.nombre} {self.apellidos}, Tramo: {tramo_str}, Bilingüe: {bilingue_str}, Curso: {curso_str}"
+        return (f"{self.nie} - {self.nombre} {self.apellidos} | Tramo: {self.tramo.name} "
+                f"| Bilingüe: {'Sí' if self.bilingue else 'No'}")
 
-    @property
-    def nie(self):
-        return self._nie
+    def crear_alumno(self):
+        return database.gestion_alumno.insertar_alumno(
+            self.nie, self.nombre, self.apellidos,
+            self.tramo.name[-1] if self.tramo != Tramos.NADA else '0',
+            int(self.bilingue)
+        )
 
-    @nie.setter
-    def nie(self, value):
-        self._nie = value.strip()
+    def modificar_alumno(self):
+        return database.gestion_alumno.modificar_alumno(
+            self.nie, self.nombre, self.apellidos,
+            self.tramo.name[-1] if self.tramo != Tramos.NADA else '0',
+            int(self.bilingue)
+        )
 
-    @property
-    def nombre(self):
-        return self._nombre
+    def borrar_alumno(self):
+        return database.borrar_alumno(self.nie)
 
-    @nombre.setter
-    def nombre(self, value):
-        self._nombre = value.strip()
+    def seleccionar_alumno(self):
+        datos = database.obtener_alumno(self.nie)
+        if datos:
+            alumno_data = datos[0]
+            self.nombre = alumno_data['nombre']
+            self.apellidos = alumno_data['apellidos']
+            self.tramo = Tramos['TRAMO_' + alumno_data['tramo']] if alumno_data['tramo'] != '0' else Tramos.NADA
+            self.bilingue = bool(alumno_data['bilingue'])
+        return datos
 
-    @property
-    def apellidos(self):
-        return self._apellidos
-
-    @apellidos.setter
-    def apellidos(self, value):
-        self._apellidos = value.strip()
-
-    @property
-    def tramo(self):
-        return self._tramo
-
-    @tramo.setter
-    def tramo(self, value):
-        if isinstance(value, Tramos):
-            self._tramo = value
-        elif isinstance(value, int):
-            try:
-                self._tramo = Tramos(value)
-            except ValueError:
-                self._tramo = Tramos.NADA
-        else:
-            self._tramo = Tramos.NADA
-
-    @property
-    def bilingue(self):
-        return self._bilingue
-
-    @bilingue.setter
-    def bilingue(self, value):
-        if isinstance(value, bool):
-            self._bilingue = value
-        elif isinstance(value, (int, str)):
-            self._bilingue = str(value).lower() in ['true', '1', 'sí', 's']
-        else:
-            self._bilingue = False
-
-    @property
-    def curso(self):
-        return self._curso
-
-    @curso.setter
-    def curso(self, value):
-        if isinstance(value, Curso):
-            self._curso = value
-        else:
-            self._curso = Curso(curso=str(value)) # Intenta crear un Curso si se pasa un string
+    @staticmethod
+    def visualizar_lista_alumnos():
+        alumnos = database.listar_alumnos()
+        for alumno in alumnos:
+            tramo = 'NADA' if alumno['tramo'] == '0' else f"TRAMO_{alumno['tramo']}"
+            bilingue = 'Sí' if alumno['bilingue'] else 'No'
+            print(f"{alumno['nie']} - {alumno['nombre']} {alumno['apellidos']} | Tramo: {tramo} | Bilingüe: {bilingue}")

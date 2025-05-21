@@ -1,4 +1,4 @@
-#Borrar comentarios solo al final para no volverme loca
+#Borrar comentarios solo al final para no volverme loca pero no olvidar!!
 
 import pymysql
 from pymysql import err as pymysql_error

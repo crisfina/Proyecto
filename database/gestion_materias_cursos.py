@@ -7,12 +7,12 @@ from database.gestion import GestionBBDD
 from database.gestion_libro import GestionLibro
 
 
-class GestionMateriasCursos(GestionBBDD):
-    def __init__(self):
-        GestionBBDD.__init__(self)
+class GestionMateriasCursos:
+    def __init__(self, db_manager):
+        self.db_manager = db_manager
 
     def cargar_csv_cursos_materias(self, archivo_csv="database/curso_materia.csv"):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return
 
@@ -26,38 +26,38 @@ class GestionMateriasCursos(GestionBBDD):
                         curso_completo = f"{anio}-{curso_nombre}"
 
                         #Insertar curso sólo si NO existe
-                        self.cursor.execute("SELECT curso FROM cursos WHERE curso = %s", (curso_completo,))
-                        if not self.cursor.fetchone():
-                            self.cursor.execute("INSERT INTO cursos (curso, nivel) VALUES (%s, %s)",
+                        self.db_manager.cursor.execute("SELECT curso FROM cursos WHERE curso = %s", (curso_completo,))
+                        if not self.db_manager.cursor.fetchone():
+                            self.db_manager.cursor.execute("INSERT INTO cursos (curso, nivel) VALUES (%s, %s)",
                                                 (curso_completo, nivel))
-                            self.conexion.commit()
+                            self.db_manager.conexion.commit()
 
                         #Inserta materia si no existe
-                        self.cursor.execute(
-                            "SELECT id_materia FROM materias WHERE nombre = %s AND departamento = %s",
+                        self.db_manager.cursor.execute(
+                            "SELECT id FROM materias WHERE nombre = %s AND departamento = %s",
                             (nombre_materia, departamento))
-                        if not self.cursor.fetchone():
-                            self.cursor.execute("INSERT INTO materias (nombre, departamento) VALUES (%s, %s)",
+                        if not self.db_manager.cursor.fetchone():
+                            self.db_manager.cursor.execute("INSERT INTO materias (nombre, departamento) VALUES (%s, %s)",
                                                 (nombre_materia, departamento))
-                            self.conexion.commit()
+                            self.db_manager.conexion.commit()
                     except ValueError as e:
                         print(f"Error al procesar la línea: {line.strip()} - {e}")
-                        self.conexion.rollback()
+                        self.db_manager.conexion.rollback()
         except FileNotFoundError:
             print(f"El archivo '{archivo_csv}' no fue encontrado.")
         except Exception as e:
             print(f"Ocurrió un error durante la carga de cursos y materias: {e}")
-            if self.conexion:
-                self.conexion.rollback()
+            if self.db_manager.conexion:
+                self.db_manager.conexion.rollback()
 
     def seleccionar_curso(self, curso_str):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             #mirar que no se haya ido a Parla al refactorizar
             print("No hay conexión a la base de datos.")
             return None
         try:
-            self.cursor.execute("SELECT * FROM cursos WHERE curso = %s", (curso_str,))
-            curso_data = self.cursor.fetchone()
+            self.db_manager.cursor.execute("SELECT * FROM cursos WHERE curso = %s", (curso_str,))
+            curso_data = self.db_manager.cursor.fetchone()
             if curso_data:
                 anio = curso_data['curso'].split('-')[0] if '-' in curso_data['curso'] else []
                 nombre_curso = curso_data['curso'].split('-')[1] if '-' in curso_data['curso'] else curso_data[
@@ -69,23 +69,28 @@ class GestionMateriasCursos(GestionBBDD):
             return None
 
     def show_cursos(self):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return []
         try:
-            self.cursor.execute("SELECT curso FROM cursos")
-            return self.cursor.fetchall()
+            self.db_manager.cursor.execute("SELECT curso FROM cursos")
+            return self.db_manager.cursor.fetchall()
         except pymysql_error.Error as err:
             print(f"Error al mostrar cursos: {err}")
             return []
 
     def show_materias(self):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return []
         try:
-            self.cursor.execute("SELECT id_materia, nombre, departamento FROM materias")
-            return self.cursor.fetchall()
+            self.db_manager.cursor.execute("SELECT id, nombre, departamento FROM materias")
+            return self.db_manager.cursor.fetchall()
         except pymysql_error.Error as err:
             print(f"Error al mostrar materias: {err}")
             return []
+
+    def verificar_existencia_curso(self, curso_nombre):
+        sql = "SELECT COUNT(*) FROM cursos WHERE curso = %s"
+        result = self.db_manager.ejecutar_consulta_con_un_resultado(sql, (curso_nombre,))
+        return result['COUNT(*)'] > 0 if result else False

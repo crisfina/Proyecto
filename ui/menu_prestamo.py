@@ -1,4 +1,5 @@
-
+#arreglar sentencias sql de alumnos. intentar hacer una función que seleccione si me da tiempo para que no sea tan
+#tedioso meter alumnos y libros (sólo si da tiempo, si no meterlo en mejoras en la documentación)
 from ui.menu import Menu
 from datetime import date
 from clases.enum_estados import Estado
@@ -6,7 +7,6 @@ from clases.enum_estados import Estado
 class MenuPrestamo(Menu):
     def __init__(self, database_prestamo, database_libro, database_alumno, database_materias_cursos):
         super().__init__()
-        self.database_manager = database_prestamo
         self.database_prestamo = database_prestamo
         self.database_libro = database_libro
         self.database_alumno = database_alumno
@@ -71,17 +71,17 @@ class MenuPrestamo(Menu):
                 print(f"Ocurrió un error: {e}")
 
     def _seleccionar_alumno(self):
-        nie = input("Introduzca el NIE del alumno: ").strip()
-        alumno = self.database_manager.seleccionar_alumno(nie)
+        nie = input("Introduzca el nie del alumno: ").strip()
+        alumno = self.database_alumno.seleccionar_alumno(nie)
         if alumno:
             return nie, alumno[0]['nombre'] + ' ' + alumno[0]['apellidos']
         else:
-            print(f"No se encontró ningún alumno con el NIE '{nie}'.")
+            print(f"No se encontró ningún alumno con el nie '{nie}'.")
             return None, None
 
     def _seleccionar_libro(self):
         isbn = input("Introduzca el ISBN del libro: ").strip()
-        libro = self.database_manager.seleccionar_libro(isbn)
+        libro = self.database_libro.seleccionar_libro(isbn)
         if libro:
             return isbn, libro.titulo
         else:
@@ -98,23 +98,23 @@ class MenuPrestamo(Menu):
         if not isbn:
             return
 
-        alumno_data = self.database_manager.seleccionar_alumno(nie)
+        alumno_data = self.database_alumno.seleccionar_alumno(nie)
         if not alumno_data:
-            print(f"Error: No se encontraron datos del alumno con NIE '{nie}'.")
+            print(f"Error: No se encontraron datos del alumno con nie '{nie}'.")
             return
         curso_alumno = alumno_data[0].get('curso')
 
-        if self.database_manager.seleccionar_libro(isbn) is None:
+        if self.database_libro.seleccionar_libro(isbn) is None:
             print(f"Error: No se encontró el libro con ISBN '{isbn}'.")
             return
 
-        libro = self.database_manager.seleccionar_libro(isbn)
+        libro = self.database_libro.seleccionar_libro(isbn)
         if libro and libro.numero_ejemplares > 0:
             fecha_entrega = date.today()
             fecha_devolucion = None
             estado = Estado.PRESTADO.value
 
-            if self.database_manager.crear_prestamo(nie, curso_alumno, isbn, fecha_entrega, fecha_devolucion, estado):
+            if self.database_prestamo.crear_prestamo(nie, curso_alumno, isbn, fecha_entrega, fecha_devolucion, estado):
                 print(f"Préstamo realizado: Alumno '{nombre_alumno}' - Libro '{titulo_libro}' (ISBN: {isbn}).")
                 print("(Contrato de préstamo generado ficticiamente)")
             else:
@@ -134,17 +134,17 @@ class MenuPrestamo(Menu):
         if not isbn:
             return
 
-        alumno_data = self.database_manager.seleccionar_alumno(nie)
+        alumno_data = self.database_alumno.seleccionar_alumno(nie)
         if not alumno_data:
-            print(f"Error: No se encontraron datos del alumno con NIE '{nie}'.")
+            print(f"Error: No se encontraron datos del alumno con nie '{nie}'.")
             return
         curso_alumno = alumno_data[0].get('curso')
 
-        prestamo = self.database_manager.seleccionar_prestamo(nie, curso_alumno, isbn)
+        prestamo = self.database_prestamo.seleccionar_prestamo(nie, curso_alumno, isbn)
         if prestamo and prestamo.estado == Estado.PRESTADO.value:
             fecha_devolucion = date.today()
             estado = Estado.DEVUELTO.value
-            if self.database_manager.update_prestamo(nie, curso_alumno, isbn, fecha_devolucion, estado):
+            if self.database_prestamo.update_prestamo(nie, curso_alumno, isbn, fecha_devolucion, estado):
                 print(f"Devolución registrada: Alumno '{nombre_alumno}' - Libro '{titulo_libro}' (ISBN: {isbn}).")
             else:
                 print("Error al registrar la devolución.")
@@ -153,14 +153,14 @@ class MenuPrestamo(Menu):
 
     def _ver_lista_prestamos(self):
         print("\n--- LISTA DE PRÉSTAMOS ---")
-        prestamos = self.database_manager.show_prestamos()
+        prestamos = self.database_prestamo.show_prestamos()
         if prestamos:
             for prestamo in prestamos:
-                alumno = self.database_manager.seleccionar_alumno(prestamo['nie'])
-                libro = self.database_manager.seleccionar_libro(prestamo['isbn'])
+                alumno = self.database_alumno.seleccionar_alumno(prestamo['nie'])
+                libro = self.database_libro.seleccionar_libro(prestamo['isbn'])
                 nombre_alumno = alumno[0]['nombre'] + ' ' + alumno[0]['apellidos'] if alumno else "Desconocido"
                 titulo_libro = libro.titulo if libro else "Desconocido"
-                print(f"NIE Alumno: {prestamo['nie']} ({nombre_alumno}), "
+                print(f"nie Alumno: {prestamo['nie']} ({nombre_alumno}), "
                       f"Curso: {prestamo['curso']}, "
                       f"ISBN Libro: {prestamo['isbn']} ({titulo_libro}), "
                       f"Fecha Entrega: {prestamo['fecha_entrega']}, "
@@ -171,24 +171,24 @@ class MenuPrestamo(Menu):
 
     def _borrar_prestamo(self):
         print("\n--- BORRAR PRÉSTAMO ---")
-        nie = input("Introduzca el NIE del alumno del préstamo a borrar: ").strip()
+        nie = input("Introduzca el nie del alumno del préstamo a borrar: ").strip()
         isbn = input("Introduzca el ISBN del libro del préstamo a borrar: ").strip()
 
-        alumno_data = self.database_manager.seleccionar_alumno(nie)
+        alumno_data = self.database_alumno.seleccionar_alumno(nie)
         if not alumno_data:
-            print(f"Error: No se encontraron datos del alumno con NIE '{nie}'.")
+            print(f"Error: No se encontraron datos del alumno con nie '{nie}'.")
             return
         curso_alumno = alumno_data[0].get('curso')
 
-        prestamo_existente = self.database_manager.seleccionar_prestamo(nie, curso_alumno, isbn)
+        prestamo_existente = self.database_prestamo.seleccionar_prestamo(nie, curso_alumno, isbn)
         if prestamo_existente:
-            confirmacion = input(f"¿Está seguro de que desea borrar el préstamo del alumno con NIE '{nie}' para el libro con ISBN '{isbn}'? (s/n): ").lower()
+            confirmacion = input(f"¿Está seguro de que desea borrar el préstamo del alumno con nie '{nie}' para el libro con ISBN '{isbn}'? (s/n): ").lower()
             if confirmacion == 's':
-                if self.database_manager.del_prestamo(nie, curso_alumno, isbn):
-                    print(f"Préstamo del alumno con NIE '{nie}' para el libro con ISBN '{isbn}' borrado con éxito.")
+                if self.database_prestamo.del_prestamo(nie, curso_alumno, isbn):
+                    print(f"Préstamo del alumno con nie '{nie}' para el libro con ISBN '{isbn}' borrado con éxito.")
                 else:
                     print(f"Error al borrar el préstamo.")
             else:
                 print("Operación de borrado cancelada.")
         else:
-            print(f"No se encontró ningún préstamo para el alumno con NIE '{nie}' y el libro con ISBN '{isbn}'.")
+            print(f"No se encontró ningún préstamo para el alumno con nie '{nie}' y el libro con ISBN '{isbn}'.")

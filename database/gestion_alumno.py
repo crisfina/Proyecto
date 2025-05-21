@@ -1,54 +1,55 @@
-
+#borrar comentarios al final.
 from pymysql import err as pymysql_error
 from clases.enum_tramos import Tramos
-from database.gestion import GestionBBDD
 
 
-class GestionAlumno(GestionBBDD):
-    def __init__(self):
-        super().__init__()
-    def insertar_alumno(self, nie, nombre, apellidos, tramo, bilingue, curso):
-        if not self.conexion:
+
+class GestionAlumno:
+    def __init__(self, db_manager):
+        self.db_manager = db_manager
+
+    def insertar_alumno(self, nie, nombre, apellidos, tramo, bilingue):
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
             sql = "INSERT INTO alumnos (nie, nombre, apellidos, tramo, bilingue) VALUES (%s, %s, %s, %s, %s)"
             val = (nie, nombre, apellidos, tramo.value if isinstance(tramo, Tramos) else tramo, int(bilingue))
-            self.cursor.execute(sql, val)
-            self.conexion.commit()
+            self.db_manager.cursor.execute(sql, val)
+            self.db_manager.conexion.commit()
             return True
         except pymysql_error.Error as err:
             print(f"Error al insertar alumno: {err}")
-            self.conexion.rollback()
+            self.db_manager.conexion.rollback()
             return False
 
 
     def seleccionar_alumno(self, nie):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return None
         try:
-            self.cursor.execute("SELECT * FROM alumnos WHERE nie = %s", (nie,))
-            return self.cursor.fetchall()
+            self.db_manager.cursor.execute("SELECT * FROM alumnos WHERE nie = %s", (nie,))
+            return self.db_manager.cursor.fetchall()
         except pymysql_error.Error as err:
             print(f"Error al seleccionar alumno: {err}")
             return None
 
 
     def show_alumnos(self):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return
         try:
-            self.cursor.execute("SELECT * FROM alumnos")
-            return self.cursor.fetchall()
+            self.db_manager.cursor.execute("SELECT * FROM alumnos")
+            return self.db_manager.cursor.fetchall()
         except pymysql_error.Error as err:
             print(f"Error al mostrar alumnos: {err}")
             return
 
 
-    def modificar_alumno(self, nie, nombre=None, apellidos=None, tramo=None, bilingue=None, curso=None):
-        if not self.conexion:
+    def modificar_alumno(self, nie, nombre=None, apellidos=None, tramo=None, bilingue=None):
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
@@ -67,29 +68,34 @@ class GestionAlumno(GestionBBDD):
             if bilingue is not None:
                 updates.append("bilingue = %s")
                 values.append(int(bilingue))
-            sql += ", ".join(updates)
-            sql += " WHERE nie = %s"
+            if not updates:
+                print("No se proporcionaron campos para modificar.")
+                return True
+            sql = f"UPDATE alumnos SET {', '.join(updates)} WHERE nie = %s"
             values.append(nie)
-            self.cursor.execute(sql, tuple(values))
-            self.conexion.commit()
-            return self.cursor.rowcount > 0
+            self.db_manager.cursor.execute(sql, tuple(values))
+            self.db_manager.conexion.commit()
+            return self.db_manager.cursor.rowcount > 0
+
         except pymysql_error.Error as err:
             print(f"Error al modificar alumno: {err}")
-            self.conexion.rollback()
+            return False
+        except Exception as e:
+            print(f"Error inesperado al modificar alumno: {e}")
             return False
 
 
     def del_alumno(self, nie):
-        if not self.conexion:
+        if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
-            self.cursor.execute("DELETE FROM alumnos WHERE nie = %s", (nie,))
-            self.conexion.commit()
-            return self.cursor.rowcount > 0
+            self.db_manager.cursor.execute("DELETE FROM alumnos WHERE nie = %s", (nie,))
+            self.db_manager.conexion.commit()
+            return self.db_manager.cursor.rowcount > 0
         except pymysql_error.Error as err:
             print(f"Error al borrar alumno: {err}")
-            self.conexion.rollback()
+            self.db_manager.conexion.rollback()
             return False
 
 

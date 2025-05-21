@@ -1,15 +1,17 @@
 #al separar los menús he duplicado seleccionar curso en menu libro o alumno, encontrar lo que llama al duplicado y cambiar
-
+from database.gestion_materias_cursos import GestionMateriasCursos
 from ui.menu import Menu
 from clases.libro import Libro
 from clases.materia import Materia
 from clases.curso import Curso
 
+
 class MenuLibro(Menu):
-    def __init__(self, database_libro, database_curso):
+    def __init__(self, database_libro, database_curso, database_materias_cursos):
         super().__init__()
-        self.database_manager = database_libro
+        self.database_libro = database_libro
         self.database_curso = database_curso
+        self.database_materias_cursos = database_materias_cursos
 
     def _mostrar_menu(self):
         print("\n--- MENÚ DE LIBROS ---")
@@ -72,7 +74,7 @@ class MenuLibro(Menu):
                 print(f"Ocurrió un error: {e}")
 
     def _seleccionar_materia(self):
-        materias = self.database_manager.show_materias()
+        materias = self.database_materias_cursos.show_materias()
         if not materias:
             print("No hay materias disponibles.")
             return None
@@ -90,7 +92,7 @@ class MenuLibro(Menu):
                 print("Por favor, introduzca un número.")
 
     def _seleccionar_curso(self):
-        cursos = self.database_manager.show_cursos()
+        cursos = self.database_materias_cursos.show_cursos()
         if not cursos:
             print("No hay cursos disponibles.")
             return None
@@ -130,12 +132,12 @@ class MenuLibro(Menu):
             libro = Libro(isbn=isbn, titulo=titulo, autor=autor, numero_ejemplares=num_ejemplares,
                           materia=Materia(id_materia=materia_id, nombre="", departamento=""), #Carga BBDD
                           curso=Curso(anio=curso_str.split('-')[0], curso=curso_str.split('-')[1]))
-            if self.database_manager.insertar_libro(libro.isbn,
+            if self.database_libro.insertar_libro(libro.isbn,
                                                     libro.titulo,
                                                     libro.autor,
                                                     libro.numero_ejemplares,
                                                     libro.materia.id_materia,
-                                                    libro.curso.curso):
+                                                    curso_str):
                 print(f"Libro '{libro.titulo}' con ISBN '{libro.isbn}' añadido.")
             else:
                 print("Error al añadir el libro.")
@@ -145,7 +147,7 @@ class MenuLibro(Menu):
     def _ver_datos_libro(self):
         print("\n--- VER DATOS DE UN LIBRO ---")
         isbn = input("Introduzca el ISBN del libro que desea ver: ").strip()
-        libro_data = self.database_manager.seleccionar_libro(isbn)
+        libro_data = self.database_libro.seleccionar_libro(isbn)
         if libro_data:
             print(f"ISBN: {libro_data.isbn}")
             print(f"Título: {libro_data.titulo}")
@@ -159,7 +161,7 @@ class MenuLibro(Menu):
     def _modificar_libro(self):
         print("\n--- MODIFICAR LIBRO ---")
         isbn_modificar = input("Introduzca el ISBN del libro que desea modificar: ").strip()
-        libro_existente = self.database_manager.seleccionar_libro(isbn_modificar)
+        libro_existente = self.database_libro.seleccionar_libro(isbn_modificar)
         if libro_existente:
             print("\nDeje los campos en blanco si no desea modificarlos.")
             titulo = input(f"Nuevo título ({libro_existente.titulo}): ").strip() or libro_existente.titulo
@@ -179,7 +181,7 @@ class MenuLibro(Menu):
                 else:
                     print("Por favor, introduzca un número entero para los ejemplares.")
 
-            if self.database_manager.modificar_libro(isbn_modificar, titulo, autor, nuevo_num_ejemplares):
+            if self.database_libro.modificar_libro(isbn_modificar, titulo, autor, nuevo_num_ejemplares):
                 print(f"Libro con ISBN '{isbn_modificar}' modificado con éxito.")
             else:
                 print(f"Error al modificar el libro con ISBN '{isbn_modificar}'.")
@@ -188,7 +190,7 @@ class MenuLibro(Menu):
 
     def _ver_lista_libros(self):
         print("\n--- LISTA DE LIBROS ---")
-        libros = self.database_manager.show_libros()
+        libros = self.database_libro.show_libros()
         if libros:
             for libro in libros:
                 print(f"ISBN: {libro['isbn']}, Título: {libro['titulo']}, Autor: {libro['autor']}, "
@@ -200,11 +202,11 @@ class MenuLibro(Menu):
     def _borrar_libro(self):
         print("\n--- BORRAR LIBRO ---")
         isbn_borrar = input("Introduzca el ISBN del libro que desea borrar: ").strip()
-        libro_existente = self.database_manager.seleccionar_libro(isbn_borrar)
+        libro_existente = self.database_libro.seleccionar_libro(isbn_borrar)
         if libro_existente:
             confirmacion = input(f"¿Está seguro de que desea borrar el libro con ISBN '{isbn_borrar}'? (s/n): ").lower()
             if confirmacion == 's':
-                if self.database_manager.del_libro(isbn_borrar):
+                if self.database_libro.del_libro(isbn_borrar):
                     print(f"Libro con ISBN '{isbn_borrar}' borrado con éxito.")
                 else:
                     print(f"Error al borrar el libro con ISBN '{isbn_borrar}'.")

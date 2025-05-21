@@ -1,8 +1,6 @@
-#intentar hacer un apaño para mostrar curso
-#al separar los menús he duplicado seleccionar curso en menu libro o alumno, encontrar lo que llama al duplicado y cambiar
+#no olvidar borrar comentarios, sólo al final! se me olvidó poner sin beca, arreglar!
 from ui.menu import Menu
 from clases.alumno import Alumno
-from clases.curso import Curso
 from clases.enum_tramos import Tramos
 
 class MenuAlumno(Menu):
@@ -88,63 +86,43 @@ class MenuAlumno(Menu):
             except ValueError:
                 print("Por favor, introduzca un número.")
 
-    def _seleccionar_curso(self):
-        cursos = self.database_curso.show_cursos()
-        if not cursos:
-            print("No hay cursos disponibles.")
-            return None
-        print("Seleccione el curso:")
-        for i, curso in enumerate(cursos):
-            print(f"{i + 1}. {curso['curso']}")
-        while True:
-            try:
-                opcion = int(input("Opción: "))
-                if 1 <= opcion <= len(cursos):
-                    return cursos[opcion - 1]['curso']
-                else:
-                    print("Opción no válida.")
-            except ValueError:
-                print("Por favor, introduzca un número.")
+
 
     def _crear_alumno(self):
         print("\n--- CREAR ALUMNO ---")
-        nie = self._pedir_dato("NIE (ej: 12345678A): ", str)
+        nie = self._pedir_dato("nie (ej: 12345678A): ", str)
         nombre = self._pedir_dato("Nombre: ", str)
         apellidos = self._pedir_dato("Apellidos: ", str)
         tramo = self._seleccionar_tramo()
         bilingue_str = input("¿Es bilingüe? (s/n): ").strip().lower()
         bilingue = True if bilingue_str == 's' else False
-        curso_str = self._seleccionar_curso()
 
-        if curso_str:
-            alumno = Alumno(nie=nie, nombre=nombre, apellidos=apellidos, tramo=tramo, bilingue=bilingue, curso=Curso(anio=curso_str.split('-')[0], curso=curso_str.split('-')[1]))
-            if self.database_alumno.insertar_alumno(alumno.nie, alumno.nombre, alumno.apellidos, alumno.tramo, alumno.bilingue, alumno.curso.curso):
-                print(f"Alumno '{alumno.nombre} {alumno.apellidos}' creado con NIE '{alumno.nie}' en el curso '{alumno.curso}'.")
-            else:
-                print("Error al crear el alumno.")
+        alumno = Alumno(nie=nie, nombre=nombre, apellidos=apellidos, tramo=tramo, bilingue=bilingue)
+        if self.database_alumno.insertar_alumno(alumno.nie, alumno.nombre, alumno.apellidos, alumno.tramo,
+                                                alumno.bilingue):
+            print(f"Alumno '{alumno.nombre} {alumno.apellidos}' creado con nie '{alumno.nie}'.")
         else:
-            print("No se pudo crear el alumno porque no se seleccionó un curso.")
+            print("Error al crear el alumno.")
 
     def _ver_datos_alumno(self):
         print("\n--- VER DATOS DE UN ALUMNO ---")
-        nie = input("Introduzca el NIE del alumno que desea ver: ").strip()
+        nie = input("Introduzca el nie del alumno que desea ver: ").strip()
         alumno_data = self.database_alumno.seleccionar_alumno(nie)
         if alumno_data:
             alumno = alumno_data[0]
             tramo_str = Tramos(int(alumno['tramo'])).name.replace('TRAMO_', 'Tramo ') if alumno['tramo'] != '0' else 'Ninguno'
             bilingue_str = "Sí" if alumno['bilingue'] else "No"
-            print(f"NIE: {alumno['nie']}")
+            print(f"nie: {alumno['nie']}")
             print(f"Nombre: {alumno['nombre']}")
             print(f"Apellidos: {alumno['apellidos']}")
             print(f"Tramo: {tramo_str}")
             print(f"Bilingüe: {bilingue_str}")
-            print("Curso: Información del curso no disponible en esta vista.")
         else:
-            print(f"No se encontró ningún alumno con el NIE '{nie}'.")
+            print(f"No se encontró ningún alumno con el nie '{nie}'.")
 
     def _modificar_alumno(self):
         print("\n--- MODIFICAR ALUMNO ---")
-        nie_modificar = input("Introduzca el NIE del alumno que desea modificar: ").strip()
+        nie_modificar = input("Introduzca el nie del alumno que desea modificar: ").strip()
         alumno_existente = self.database_alumno.seleccionar_alumno(nie_modificar)
         if alumno_existente:
             alumno_existente = alumno_existente[0]
@@ -163,14 +141,12 @@ class MenuAlumno(Menu):
             nuevo_bilingue = True if bilingue_str == 's' else False if bilingue_str == 'n' else alumno_existente['bilingue']
 
 
-            nuevo_curso_str = self._seleccionar_curso()
-
-            if self.database_manager.modificar_alumno(nie_modificar, nombre, apellidos, nuevo_tramo, nuevo_bilingue, nuevo_curso_str):
-                print(f"Alumno con NIE '{nie_modificar}' modificado con éxito.")
+            if self.database_alumno.modificar_alumno(nie_modificar, nombre, apellidos, nuevo_tramo, nuevo_bilingue):
+                print(f"Alumno con nie '{nie_modificar}' modificado con éxito.")
             else:
-                print(f"Error al modificar el alumno con NIE '{nie_modificar}'.")
+                print(f"Error al modificar el alumno con nie '{nie_modificar}'.")
         else:
-            print(f"No se encontró ningún alumno con el NIE '{nie_modificar}'.")
+            print(f"No se encontró ningún alumno con el nie '{nie_modificar}'.")
 
     def _ver_lista_alumnos(self):
         print("\n--- LISTA DE ALUMNOS ---")
@@ -179,22 +155,22 @@ class MenuAlumno(Menu):
             for alumno in alumnos:
                 tramo_str = Tramos(int(alumno['tramo'])).name.replace('TRAMO_', 'Tramo ') if alumno['tramo'] != '0' else 'Ninguno'
                 bilingue_str = "Sí" if alumno['bilingue'] else "No"
-                print(f"NIE: {alumno['nie']}, Nombre: {alumno['nombre']} {alumno['apellidos']}, Tramo: {tramo_str}, Bilingüe: {bilingue_str}")
+                print(f"nie: {alumno['nie']}, Nombre: {alumno['nombre']} {alumno['apellidos']}, Tramo: {tramo_str}, Bilingüe: {bilingue_str}")
         else:
             print("No hay alumnos registrados.")
 
     def _borrar_alumno(self):
         print("\n--- BORRAR ALUMNO ---")
-        nie_borrar = input("Introduzca el NIE del alumno que desea borrar: ").strip()
+        nie_borrar = input("Introduzca el nie del alumno que desea borrar: ").strip()
         alumno_existente = self.database_alumno.seleccionar_alumno(nie_borrar)
         if alumno_existente:
-            confirmacion = input(f"¿Está seguro de que desea borrar al alumno con NIE '{nie_borrar}'? (s/n): ").lower()
+            confirmacion = input(f"¿Está seguro de que desea borrar al alumno con nie '{nie_borrar}'? (s/n): ").lower()
             if confirmacion == 's':
                 if self.database_alumno.del_alumno(nie_borrar):
-                    print(f"Alumno con NIE '{nie_borrar}' borrado con éxito.")
+                    print(f"Alumno con nie '{nie_borrar}' borrado con éxito.")
                 else:
-                    print(f"Error al borrar el alumno con NIE '{nie_borrar}'.")
+                    print(f"Error al borrar el alumno con nie '{nie_borrar}'.")
             else:
                 print("Operación de borrado cancelada.")
         else:
-            print(f"No se encontró ningún alumno con el NIE '{nie_borrar}'.")
+            print(f"No se encontró ningún alumno con el nie '{nie_borrar}'.")

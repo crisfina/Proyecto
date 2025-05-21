@@ -1,5 +1,4 @@
-#intenta hacer el menu más bonito de aquí a mañana. Si no se puede deja este. Se puede copiar del draft que hice inicial
-#pero tengo que separar el menu préstamos
+#borrar comentarios al final.
 
 from ui.menu import Menu
 from ui.menu_alumno import MenuAlumno
@@ -23,8 +22,8 @@ class MenuPrincipal(Menu):
         self.database_prestamo = database_prestamo
         self.database_materias_cursos = database_materias_cursos
         self.menu_alumno = MenuAlumno(database_alumno, database_materias_cursos)
-        self.menu_libro = MenuLibro(database_libro, database_materias_cursos)
-        self.menu_prestamo = MenuPrestamo(database_prestamo, database_alumno, database_libro, database_materias_cursos)
+        self.menu_libro = MenuLibro(database_libro, database_materias_cursos, database_materias_cursos)
+        self.menu_prestamo = MenuPrestamo(database_prestamo, database_libro, database_alumno, database_materias_cursos)
         self.usuario_activo = None
 
 
