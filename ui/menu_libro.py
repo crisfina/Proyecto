@@ -1,4 +1,5 @@
-#al separar los menús he duplicado seleccionar curso en menu libro o alumno, encontrar lo que llama al duplicado y cambiar
+
+
 from database.gestion_materias_cursos import GestionMateriasCursos
 from ui.menu import Menu
 from clases.libro import Libro

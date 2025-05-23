@@ -1,17 +1,20 @@
-#arreglar sentencias sql de alumnos. intentar hacer una función que seleccione si me da tiempo para que no sea tan
-#tedioso meter alumnos y libros (sólo si da tiempo, si no meterlo en mejoras en la documentación)
+
+
+from datetime import date, timedelta
+
 from ui.menu import Menu
-from datetime import date
 from clases.enum_estados import Estado
+from database.gestion_materias_cursos import GestionMateriasCursos
 
 class MenuPrestamo(Menu):
-    def __init__(self, database_prestamo, database_libro, database_alumno, database_materias_cursos):
+    def __init__(self, database_prestamo, database_libro, database_alumno, database_materias_cursos, db_manager):
         super().__init__()
         self.database_prestamo = database_prestamo
         self.database_libro = database_libro
         self.database_alumno = database_alumno
         self.database_materias_cursos = database_materias_cursos
-
+        self.db_manager = db_manager
+        self.gestor_cursos = GestionMateriasCursos(db_manager)
 
     def _mostrar_menu(self):
         print("\n--- MENÚ DE PRÉSTAMOS ---")
@@ -98,11 +101,17 @@ class MenuPrestamo(Menu):
         if not isbn:
             return
 
+        curso_alumno = self.gestor_cursos.mostrar_y_seleccionar_curso()
+
+        if not curso_alumno:
+            print("Selección de curso cancelada o fallida")
+            return
+
         alumno_data = self.database_alumno.seleccionar_alumno(nie)
         if not alumno_data:
             print(f"Error: No se encontraron datos del alumno con nie '{nie}'.")
             return
-        curso_alumno = alumno_data[0].get('curso')
+
 
         if self.database_libro.seleccionar_libro(isbn) is None:
             print(f"Error: No se encontró el libro con ISBN '{isbn}'.")
@@ -111,7 +120,13 @@ class MenuPrestamo(Menu):
         libro = self.database_libro.seleccionar_libro(isbn)
         if libro and libro.numero_ejemplares > 0:
             fecha_entrega = date.today()
-            fecha_devolucion = None
+            fecha_fin_curso_estandar = date(date.today().year, 6, 30)
+            if fecha_entrega > fecha_fin_curso_estandar:
+                print(
+                    f"ERROR: No se pueden realizar préstamos. La fecha actual ({fecha_entrega}) es posterior a la fecha límite de préstamos para este curso ({fecha_fin_curso_estandar}).")
+                return
+
+            fecha_devolucion = fecha_fin_curso_estandar
             estado = Estado.PRESTADO.value
 
             if self.database_prestamo.crear_prestamo(nie, curso_alumno, isbn, fecha_entrega, fecha_devolucion, estado):

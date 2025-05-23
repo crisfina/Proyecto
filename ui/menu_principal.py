@@ -1,4 +1,4 @@
-#borrar comentarios al final.
+#ui.menu_principal.py
 
 from ui.menu import Menu
 from ui.menu_alumno import MenuAlumno
@@ -23,7 +23,11 @@ class MenuPrincipal(Menu):
         self.database_materias_cursos = database_materias_cursos
         self.menu_alumno = MenuAlumno(database_alumno, database_materias_cursos)
         self.menu_libro = MenuLibro(database_libro, database_materias_cursos, database_materias_cursos)
-        self.menu_prestamo = MenuPrestamo(database_prestamo, database_libro, database_alumno, database_materias_cursos)
+        self.menu_prestamo = MenuPrestamo(database_prestamo,
+                                          database_libro,
+                                          database_alumno,
+                                          database_materias_cursos,
+                                          database_manager)
         self.usuario_activo = None
 
 

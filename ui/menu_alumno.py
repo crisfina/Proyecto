@@ -1,4 +1,5 @@
-#no olvidar borrar comentarios, sólo al final! se me olvidó poner sin beca, arreglar!
+
+
 from ui.menu import Menu
 from clases.alumno import Alumno
 from clases.enum_tramos import Tramos

@@ -1,5 +1,6 @@
+#clases.alumno.py
 from clases.enum_tramos import Tramos
-from database.gestion_alumno import GestionAlumno
+
 
 class Alumno:
     def __init__(self, nie: str, nombre: str, apellidos: str,

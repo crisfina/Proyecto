@@ -1,5 +1,4 @@
-#revisar lo que tengo en bloc de notas de la primera edición, creo que estaba un poco mejor pero tendría que adaptarlo
-#y no me da tiempo a
+#clases.materia.py
 
 class Materia:
     def __init__(self, id_materia=None, nombre=None, departamento=None):

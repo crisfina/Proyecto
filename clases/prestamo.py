@@ -1,3 +1,5 @@
+
+
 from datetime import date
 from clases.enum_estados import Estado
 
@@ -15,7 +17,6 @@ class Prestamo:
                f"Entrega: {self.fecha_entrega}, Devolución: {self.fecha_devolucion if self.fecha_devolucion else 'Pendiente'}, " \
                f"Estado: {self.estado.name}"
 
-    # Getters y setters pdte revisar
     @property
     def nie(self):
         return self._nie

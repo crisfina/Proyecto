@@ -1,4 +1,4 @@
-#revisar si en lo que toqueteé ayer no he cascado algo de los cursos, creo que esto está bastante encapsuladito but...
+#clases.curso.py
 
 class Curso:
     def __init__(self, anio=None, curso=None):

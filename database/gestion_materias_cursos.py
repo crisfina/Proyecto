@@ -1,10 +1,8 @@
-#no quitar las notas hasta el final para no volverme loca, pero recuerda quitarlas
 
 from pymysql import err as pymysql_error
 
 from clases.curso import Curso
-from database.gestion import GestionBBDD
-from database.gestion_libro import GestionLibro
+
 
 
 class GestionMateriasCursos:
@@ -25,14 +23,12 @@ class GestionMateriasCursos:
                                                                                       line.strip().split(','))
                         curso_completo = f"{anio}-{curso_nombre}"
 
-                        #Insertar curso sólo si NO existe
                         self.db_manager.cursor.execute("SELECT curso FROM cursos WHERE curso = %s", (curso_completo,))
                         if not self.db_manager.cursor.fetchone():
                             self.db_manager.cursor.execute("INSERT INTO cursos (curso, nivel) VALUES (%s, %s)",
                                                 (curso_completo, nivel))
                             self.db_manager.conexion.commit()
 
-                        #Inserta materia si no existe
                         self.db_manager.cursor.execute(
                             "SELECT id FROM materias WHERE nombre = %s AND departamento = %s",
                             (nombre_materia, departamento))
@@ -52,7 +48,6 @@ class GestionMateriasCursos:
 
     def seleccionar_curso(self, curso_str):
         if not self.db_manager.conexion:
-            #mirar que no se haya ido a Parla al refactorizar
             print("No hay conexión a la base de datos.")
             return None
         try:
@@ -94,3 +89,25 @@ class GestionMateriasCursos:
         sql = "SELECT COUNT(*) FROM cursos WHERE curso = %s"
         result = self.db_manager.ejecutar_consulta_con_un_resultado(sql, (curso_nombre,))
         return result['COUNT(*)'] > 0 if result else False
+
+    def mostrar_y_seleccionar_curso(self):
+        cursos_disponibles = self.show_cursos()
+
+        if not cursos_disponibles:
+            print("No hay cursos disponibles.")
+            return None
+
+        print("\nCursos disponibles:")
+        for i, curso in enumerate(cursos_disponibles, start=1):
+            print(f"{i}. {curso['curso']}")
+
+        while True:
+            try:
+                opcion = int(input("\nSeleccione el número del curso: "))
+                if 1 <= opcion <= len(cursos_disponibles):
+                    curso_seleccionado = cursos_disponibles[opcion - 1]['curso']
+                    return curso_seleccionado
+                else:
+                    print("Opción fuera de rango. Intente nuevamente.")
+            except ValueError:
+                print("Entrada inválida. Introduzca un número.")

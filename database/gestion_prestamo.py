@@ -1,3 +1,5 @@
+
+
 from pymysql import err as pymysql_error
 
 from clases.enum_estados import Estado
@@ -14,13 +16,12 @@ class GestionPrestamo:
             print("No hay conexión a la base de datos.")
             return False
         try:
-            sql = "INSERT INTO alumnoscrusoslibros (nie_alumno, curso_alumno, isbn_libro, fecha_prestamo, \
+            sql = "INSERT INTO alumnoscrusoslibros (nie, curso, isbn, fecha_entrega, \
             fecha_devolucion, estado) VALUES (%s, %s, %s, %s, %s, %s)"
             val = (nie_alumno, curso_alumno, isbn_libro, fecha_entrega, fecha_devolucion, estado)
             self.db_manager.cursor.execute(sql, val)
             self.db_manager.conexion.commit()
 
-            #Restar ekemplar de ejemplares
             self.db_manager.cursor.execute("UPDATE libros SET numero_ejemplares = numero_ejemplares - 1 WHERE isbn = %s",
                                 (isbn_libro,))
             self.db_manager.conexion.commit()

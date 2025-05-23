@@ -1,3 +1,5 @@
+#clases.ui.enum_tramos.py
+
 from enum import Enum
 
 class Tramos(Enum):

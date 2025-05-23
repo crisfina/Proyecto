@@ -1,4 +1,4 @@
-#borrar comentarios al final.
+#database.gestion_alumno.py
 from pymysql import err as pymysql_error
 from clases.enum_tramos import Tramos
 
