@@ -1,4 +1,3 @@
-#clases.materia.py
 
 class Materia:
     def __init__(self, id_materia=None, nombre=None, departamento=None):

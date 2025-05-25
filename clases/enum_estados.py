@@ -1,4 +1,4 @@
-#clases.enum_estados.py
+# clases.enum_estados.py
 
 from enum import Enum
 

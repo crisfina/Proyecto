@@ -1,4 +1,4 @@
-#clases.ui.enum_tramos.py
+# clases.enum_tramos.py
 
 from enum import Enum
 

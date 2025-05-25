@@ -1,14 +1,13 @@
-#main.py
-#En los comentarios están los prints de debug por los problemas con la base de datos. Algunos los he dejado ya que son
-#útiles y aportan también info al usuario del proceso de carga del programa.
-
+import bcrypt
+import msvcrt
 from database.gestion import GestionBBDD
 from database.gestion_alumno import GestionAlumno
 from database.gestion_libro import GestionLibro
 from database.gestion_prestamo import GestionPrestamo
 from database.gestion_materias_cursos import GestionMateriasCursos
 from ui.menu_principal import MenuPrincipal
-import bcrypt
+
+
 
 
 def crear_usuario_inicial(db_manager):

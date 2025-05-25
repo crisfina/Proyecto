@@ -1,5 +1,4 @@
 
-
 from datetime import date
 from clases.enum_estados import Estado
 

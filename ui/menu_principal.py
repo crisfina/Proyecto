@@ -1,12 +1,12 @@
-#ui.menu_principal.py
+
 
 from ui.menu import Menu
 from ui.menu_alumno import MenuAlumno
 from ui.menu_libro import MenuLibro
 from ui.menu_prestamo import MenuPrestamo
-#import getpass - intentar hacer que funcione, si no, dejarlo como está
 import bcrypt
 import os
+from typing import List
 
 class MenuPrincipal(Menu):
     def __init__(self,
@@ -85,13 +85,14 @@ class MenuPrincipal(Menu):
         else:
             print("No se pudo iniciar sesión. Saliendo de la aplicación.")
 
-    def _recoger_opcion(self):
+    def _recoger_opcion(self) -> int:
         while True:
             try:
-                opcion = int(input("Seleccione una opción: "))
+                opcion: int = int(input("Seleccione una opción: "))
                 return opcion
             except ValueError:
                 print("Por favor, introduzca un número.")
+
 
     def _autenticar_usuario(self):
         print("\n=== INICIO DE SESIÓN ===")
@@ -112,9 +113,9 @@ class MenuPrincipal(Menu):
         print("\n=== CARGAR DATOS INICIALES ===")
         confirmacion = input("¿Está seguro de que desea cargar los datos iniciales? Esto puede sobrescribir los datos existentes. (s/n): ").lower()
         if confirmacion == 's':
-            self.database_manager.cargar_csv_alumnos()
-            self.database_manager.cargar_csv_libros()
-            self.database_manager.cargar_csv_cursos_materias()
+            self.database_materias_cursos.cargar_csv_alumnos()
+            self.database_materias_cursos.cargar_csv_libros()
+            self.database_materias_cursos.cargar_csv_cursos_materias()
             print("Carga de datos iniciales completada.")
         else:
             print("Operación de carga de datos iniciales cancelada.")

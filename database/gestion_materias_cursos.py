@@ -1,3 +1,4 @@
+# database.gestion_materias_cursos.py
 
 from pymysql import err as pymysql_error
 
@@ -23,9 +24,11 @@ class GestionMateriasCursos:
                                                                                       line.strip().split(','))
                         curso_completo = f"{anio}-{curso_nombre}"
 
-                        self.db_manager.cursor.execute("SELECT curso FROM cursos WHERE curso = %s", (curso_completo,))
+                        self.db_manager.cursor.execute("SELECT curso FROM cursos "
+                                                       "WHERE curso = %s", (curso_completo,))
                         if not self.db_manager.cursor.fetchone():
-                            self.db_manager.cursor.execute("INSERT INTO cursos (curso, nivel) VALUES (%s, %s)",
+                            self.db_manager.cursor.execute("INSERT INTO cursos (curso, nivel) "
+                                                           "VALUES (%s, %s)",
                                                 (curso_completo, nivel))
                             self.db_manager.conexion.commit()
 
@@ -33,7 +36,8 @@ class GestionMateriasCursos:
                             "SELECT id FROM materias WHERE nombre = %s AND departamento = %s",
                             (nombre_materia, departamento))
                         if not self.db_manager.cursor.fetchone():
-                            self.db_manager.cursor.execute("INSERT INTO materias (nombre, departamento) VALUES (%s, %s)",
+                            self.db_manager.cursor.execute("INSERT INTO materias (nombre, departamento) "
+                                                           "VALUES (%s, %s)",
                                                 (nombre_materia, departamento))
                             self.db_manager.conexion.commit()
                     except ValueError as e:
@@ -51,7 +55,8 @@ class GestionMateriasCursos:
             print("No hay conexión a la base de datos.")
             return None
         try:
-            self.db_manager.cursor.execute("SELECT * FROM cursos WHERE curso = %s", (curso_str,))
+            self.db_manager.cursor.execute("SELECT * FROM cursos "
+                                           "WHERE curso = %s", (curso_str,))
             curso_data = self.db_manager.cursor.fetchone()
             if curso_data:
                 anio = curso_data['curso'].split('-')[0] if '-' in curso_data['curso'] else []

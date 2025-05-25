@@ -1,20 +1,24 @@
-#database.gestion_alumno.py
 from pymysql import err as pymysql_error
 from clases.enum_tramos import Tramos
-
+from typing import Optional, List, Any, Union, Tuple
 
 
 class GestionAlumno:
-    def __init__(self, db_manager):
+    def __init__(self, db_manager: Any):
         self.db_manager = db_manager
 
-    def insertar_alumno(self, nie, nombre, apellidos, tramo, bilingue):
+    def insertar_alumno(self, nie: str,
+                        nombre: str, apellidos: str,
+                        tramo: Union[Tramos, str],
+                        bilingue: bool) -> bool:
         if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
-            sql = "INSERT INTO alumnos (nie, nombre, apellidos, tramo, bilingue) VALUES (%s, %s, %s, %s, %s)"
-            val = (nie, nombre, apellidos, tramo.value if isinstance(tramo, Tramos) else tramo, int(bilingue))
+            sql: str = ("INSERT INTO alumnos (nie, nombre, apellidos, tramo, bilingue) "
+                        "VALUES (%s, %s, %s, %s, %s)")
+            val: Tuple[Any, ...] = (nie, nombre, apellidos,
+                                    tramo.value if isinstance(tramo, Tramos) else tramo, int(bilingue))
             self.db_manager.cursor.execute(sql, val)
             self.db_manager.conexion.commit()
             return True
@@ -23,8 +27,7 @@ class GestionAlumno:
             self.db_manager.conexion.rollback()
             return False
 
-
-    def seleccionar_alumno(self, nie):
+    def seleccionar_alumno(self, nie: str) -> Optional[List[dict]]:
         if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return None
@@ -35,27 +38,29 @@ class GestionAlumno:
             print(f"Error al seleccionar alumno: {err}")
             return None
 
-
-    def show_alumnos(self):
+    def show_alumnos(self) -> Optional[List[dict]]:
         if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
-            return
+            return None
         try:
             self.db_manager.cursor.execute("SELECT * FROM alumnos")
             return self.db_manager.cursor.fetchall()
         except pymysql_error.Error as err:
             print(f"Error al mostrar alumnos: {err}")
-            return
+            return None
 
-
-    def modificar_alumno(self, nie, nombre=None, apellidos=None, tramo=None, bilingue=None):
+    def modificar_alumno(self, nie: str,
+                         nombre: Optional[str] = None,
+                         apellidos: Optional[str] = None,
+                         tramo: Optional[Union[Tramos, str]] = None,
+                         bilingue: Optional[bool] = None) -> bool:
         if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
         try:
-            sql = "UPDATE alumnos SET "
-            updates = []
-            values = []
+            sql: str = "UPDATE alumnos SET "
+            updates: List[str] = []
+            values: List[Any] = []
             if nombre is not None:
                 updates.append("nombre = %s")
                 values.append(nombre)
@@ -84,8 +89,7 @@ class GestionAlumno:
             print(f"Error inesperado al modificar alumno: {e}")
             return False
 
-
-    def del_alumno(self, nie):
+    def del_alumno(self, nie: str) -> bool:
         if not self.db_manager.conexion:
             print("No hay conexión a la base de datos.")
             return False
@@ -97,5 +101,3 @@ class GestionAlumno:
             print(f"Error al borrar alumno: {err}")
             self.db_manager.conexion.rollback()
             return False
-
-

@@ -1,4 +1,5 @@
-#clases.libro.py
+
+import re
 
 from clases.materia import Materia
 from clases.curso import Curso
@@ -23,7 +24,20 @@ class Libro:
 
     @isbn.setter
     def isbn(self, value):
-        self._isbn = value.strip()
+        cleaned_isbn = value.strip()
+        if not self._is_valid_isbn_format(cleaned_isbn):
+            raise ValueError(f"El ISBN '{cleaned_isbn}' no tiene un formato válido (ISBN-10 o ISBN-13).")
+        self._isbn = cleaned_isbn
+
+    @staticmethod
+    def _is_valid_isbn_format(isbn: str) -> bool:
+
+        isbn = isbn.replace('-', '').replace(' ', '').upper()  # Normalizar
+        if len(isbn) == 10:
+            return bool(re.fullmatch(r'^\d{9}[\dX]$', isbn))
+        elif len(isbn) == 13:
+            return bool(re.fullmatch(r'^\d{13}$', isbn))
+        return False
 
     @property
     def titulo(self):
