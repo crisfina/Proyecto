@@ -1,7 +1,7 @@
 from pymysql import err as pymysql_error
 from clases.enum_estados import Estado
 from clases.prestamo import Prestamo
-from typing import Optional, List, Any, Union, Tuple
+from typing import Optional, List, Any, Tuple
 from datetime import date
 
 

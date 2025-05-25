@@ -6,7 +6,7 @@ from ui.menu_libro import MenuLibro
 from ui.menu_prestamo import MenuPrestamo
 import bcrypt
 import os
-from typing import List
+
 
 class MenuPrincipal(Menu):
     def __init__(self,

@@ -1,4 +1,4 @@
-#clases.curso.py
+
 
 class Curso:
     def __init__(self, anio=None, curso=None):

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional, Tuple, List, Any, Union
+from typing import Optional, Tuple, List, Any
 
 from ui.menu import Menu
 from clases.enum_estados import Estado

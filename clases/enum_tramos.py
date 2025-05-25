@@ -1,4 +1,3 @@
-# clases.enum_tramos.py
 
 from enum import Enum
 

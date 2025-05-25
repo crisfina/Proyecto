@@ -1,4 +1,3 @@
-# database.gestion_materias_cursos.py
 
 from pymysql import err as pymysql_error
 

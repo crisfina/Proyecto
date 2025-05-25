@@ -1,7 +1,7 @@
 from ui.menu import Menu
 from clases.alumno import Alumno
 from clases.enum_tramos import Tramos
-from typing import Optional, Tuple, List, Any, Union
+from typing import Optional, List, Any, Union
 
 class MenuAlumno(Menu):
     def __init__(self, database_alumno: Any, database_materias_cursos: Any):

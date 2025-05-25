@@ -2,7 +2,7 @@ from ui.menu import Menu
 from clases.libro import Libro
 from clases.materia import Materia
 from clases.curso import Curso
-from typing import Optional, Tuple, List, Any, Union
+from typing import Optional, List, Any
 
 
 class MenuLibro(Menu):

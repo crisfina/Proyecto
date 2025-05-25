@@ -1,5 +1,4 @@
 import bcrypt
-import msvcrt
 from database.gestion import GestionBBDD
 from database.gestion_alumno import GestionAlumno
 from database.gestion_libro import GestionLibro
