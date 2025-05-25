@@ -1,4 +1,4 @@
-He tenido también que investigar un poco, ya que muchas funcionalidades y librerías no funcionan con mi IDE por aguna razón (getpass, mysql...), es necesario por tanto instalar algunos paquetes adicionales. 
+He tenido que investigar un poco, ya que muchas funcionalidades y librerías no funcionan con mi IDE por aguna razón (getpass, mysql...), es necesario por tanto instalar algunos paquetes adicionales. 
 Espero que no se me haya olvidado apuntar ninguno en la documentación.
 Me hubiera gustado refactorizar ciertos fallos de diseño inicial que han condicionado el desarrollo de la app, pero me quedaba sin tiempo, y la última refactorización me costó mucho cambio manual de variables, métodos, etc. 
 Intenté basarme en la estructura de las apps que habíamos hecho hasta ahora pero con la carga en la base de datos y lo que sé ahora, en retrospección, cambiaría bastantes cosas que he aprendido con este proyecto. 
