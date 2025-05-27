@@ -113,9 +113,9 @@ class MenuPrincipal(Menu):
         print("\n=== CARGAR DATOS INICIALES ===")
         confirmacion = input("¿Está seguro de que desea cargar los datos iniciales? Esto puede sobrescribir los datos existentes. (s/n): ").lower()
         if confirmacion == 's':
-            self.database_materias_cursos.cargar_csv_alumnos()
-            self.database_materias_cursos.cargar_csv_libros()
-            self.database_materias_cursos.cargar_csv_cursos_materias()
+            self.database_manager.cargar_csv_cursos_materias()
+            self.database_manager.cargar_csv_libros()
+            self.database_manager.cargar_csv_cursos_materias()
             print("Carga de datos iniciales completada.")
         else:
             print("Operación de carga de datos iniciales cancelada.")
