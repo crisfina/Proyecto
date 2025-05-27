@@ -67,49 +67,66 @@ class GestionBBDD:
 
         try:
             with open(archivo_csv, 'r', encoding='utf-8') as file:
-                next(file)
-                for line in file:
+                for i, line in enumerate(file):
                     try:
-                        isbn: str
-                        titulo: str
-                        autor: str
-                        numero_ejemplares_str: str
-                        nombre_materia: str
-                        departamento_materia: str
-                        curso_str: str
-                        isbn, titulo, autor, numero_ejemplares_str, nombre_materia, departamento_materia, curso_str = map(
-                            str.strip, line.strip().split(','))
-                        numero_ejemplares: int = int(numero_ejemplares_str)
+                        stripped_line = line.strip()
+                        partes = stripped_line.split(',')
 
-                        self.cursor.execute("SELECT id FROM materias WHERE nombre = %s \
-                            AND departamento = %s", (nombre_materia, departamento_materia))
-                        materia_existe: Optional[dict] = self.cursor.fetchone()
-                        materia_id: int
-                        if not materia_existe:
-                            self.cursor.execute("INSERT INTO materias (nombre, departamento) \
-                                VALUES (%s, %s)", (nombre_materia, departamento_materia))
-                            self.conexion.commit()
-                            materia_id = self.conexion.insert_id()
-                        else:
-                            materia_id = materia_existe['id']
-
-                        self.cursor.execute("SELECT curso FROM cursos WHERE curso = %s", (curso_str,))
-                        curso_existe: Optional[dict] = self.cursor.fetchone()
-                        if not curso_existe:
-                            print(f"Advertencia: El curso '{curso_str}' no existe. El libro '{titulo}' no se cargará.")
+                        expected_columns = 19
+                        if len(partes) != expected_columns:
+                            print(
+                                f"ERROR en línea {i + 1}: El número de columnas no coincide. Se esperaban {expected_columns}, "
+                                f"pero se encontraron {len(partes)}. Línea: '{stripped_line}'")
+                            self.conexion.rollback()
                             continue
 
-                        self.cursor.execute("INSERT INTO libros (isbn, titulo, autor, numero_ejemplares, \
-                            id_materia, id_curso) VALUES (%s, %s, %s, %s, %s, %s)",
-                                            (isbn, titulo, autor, numero_ejemplares, materia_id, curso_str))
+                        apellidos = partes[0].strip()
+                        nombre = partes[1].strip()
+
+                        (numero_escolar, numero_solicitud, fecha_solicitud,
+                         campo_no_necesario1, curso_academico, campo_no_necesario2, campo_no_necesario3,
+                         campo_no_necesario4, campo_no_necesario5, campo_no_necesario6, campo_no_necesario7,
+                         campo_no_necesario8, resultado_libros, resultado_comedor,
+                         matriculado, tipo_beca_libros, tipo_beca_comedor) = partes[2:]
+
+                        nie: str = numero_escolar.strip()
+                        curso_str: str
+                        nivel_str: str
+
+                        if '-' in curso_academico:
+                            curso_str, nivel_str = map(str.strip, curso_academico.split('-', 1))
+                        else:
+                            curso_str = curso_academico.strip()
+                            nivel_str = ''
+
+                        tramo_str: str = '0'
+                        bilingue_str: str = '1'
+
+                        self.cursor.execute("SELECT curso FROM cursos WHERE curso = %s", (curso_academico,))
+                        curso_existe: Optional[dict] = self.cursor.fetchone()
+                        if not curso_existe:
+                            self.cursor.execute("INSERT INTO cursos (curso, nivel) VALUES (%s, %s)",
+                                                (curso_academico, nivel_str))
+                            self.conexion.commit()
+
+                        self.cursor.execute(
+                            "INSERT INTO alumnos (nie, nombre, apellidos, tramo, bilingue) VALUES (%s, %s, %s, %s, %s)",
+                            (nie, nombre, apellidos, tramo_str, bilingue_str))
                         self.conexion.commit()
                     except ValueError as e:
-                        print(f"Error al procesar la línea: {line.strip()} - {e}")
+                        print(f"Error al procesar la línea {i + 1} (ValueError): '{stripped_line}' - {e}")
                         self.conexion.rollback()
+                    except IndexError as e:
+                        print(f"Error al procesar la línea {i + 1} (IndexError): '{stripped_line}' - {e}")
+                        self.conexion.rollback()
+                    except Exception as e:
+                        print(f"Ocurrió un error inesperado en la línea {i + 1}: '{stripped_line}' - {e}")
+                        self.conexion.rollback()
+            print(f"Carga de alumnos desde '{archivo_csv}' finalizada.")
         except FileNotFoundError:
-            print(f"El archivo '{archivo_csv}' no fue encontrado.")
+            print(f"ERROR: El archivo '{archivo_csv}' no fue encontrado.")
         except Exception as e:
-            print(f"Ocurrió un error durante la carga de libros: {e}")
+            print(f"Ocurrió un error general durante la carga de alumnos: {e}")
             if self.conexion:
                 self.conexion.rollback()
 
