@@ -279,52 +279,74 @@ class GestionBBDD:
             return False
 
     def cargar_alumnos_nuevo_curso(self, archivo_csv: str) -> None:
-
         if not self.conexion or not self.cursor:
-            print("No hay conexión a la base de datos.")
+            print("ERROR: No hay conexión a la base de datos activa.")
             return
 
         try:
             with open(archivo_csv, 'r', encoding='utf-8') as file:
-                next(file)
+
                 for line in file:
                     try:
-                        (apellidos_nombre, numero_escolar, numero_solicitud, fecha_solicitud,
+                        stripped_line = line.strip()
+                        partes = stripped_line.split(',')
+
+                        expected_columns = 19
+                        if len(partes) != expected_columns:
+                            print(
+                                f"ERROR: El número de columnas no coincide. Se esperaban {expected_columns}, "
+                                f"pero se encontraron {len(partes)}. Línea: '{stripped_line}'")
+                            self.conexion.rollback()
+                            continue
+
+                        apellidos = partes[0].strip()
+                        nombre = partes[1].strip()
+
+                        (numero_escolar, numero_solicitud, fecha_solicitud,
                          campo_no_necesario1, curso_academico, campo_no_necesario2, campo_no_necesario3,
                          campo_no_necesario4, campo_no_necesario5, campo_no_necesario6, campo_no_necesario7,
-                         campo_no_necesario8, campo_no_necesario9, resultado_libros, resultado_comedor,
-                         matriculado, tipo_beca_libros, tipo_beca_comedor) = line.strip().split(',')
-                        apellidos: str
-                        nombre: str
-                        apellidos, nombre = map(str.strip, apellidos_nombre.split(','))
+                         campo_no_necesario8, resultado_libros, resultado_comedor,
+                         matriculado, tipo_beca_libros, tipo_beca_comedor) = partes[2:]
+
                         nie: str = numero_escolar.strip()
                         curso_str: str
                         nivel_str: str
-                        curso_str, nivel_str = map(str.strip, curso_academico.split('-'))
-                        tramo_str: str = '0' # Si no tiene nada es que no tiene beca
-                        bilingue_str: str = '1' # Como acordamos en clase, valor por defecto
 
-                        # Verificar si el curso existe, si no, crearlo
-                        self.cursor.execute("SELECT curso "
-                                            "FROM cursos "
-                                            "WHERE curso = %s", (curso_academico,))
+                        if '-' in curso_academico:
+                            curso_str, nivel_str = map(str.strip, curso_academico.split('-', 1))
+                        else:
+                            curso_str = curso_academico.strip()
+                            nivel_str = ''
+
+                        tramo_str: str = '0'
+                        bilingue_str: str = '1'
+
+                        self.cursor.execute("SELECT curso FROM cursos WHERE curso = %s", (curso_academico,))
                         curso_existe: Optional[dict] = self.cursor.fetchone()
                         if not curso_existe:
-                            self.cursor.execute("INSERT INTO cursos (curso, nivel) "
-                                                "VALUES (%s, %s)", (curso_academico, nivel_str))
+                            self.cursor.execute("INSERT INTO cursos (curso, nivel) VALUES (%s, %s)",
+                                                (curso_academico, nivel_str))
                             self.conexion.commit()
 
-                        # Insertar alumno
-                        self.cursor.execute("INSERT INTO alumnos (nie, nombre, apellidos, tramo, bilingue) \
-                        VALUES (%s, %s, %s, %s, %s)",
-                                            (nie, nombre, apellidos, tramo_str, bilingue_str))
+                        self.cursor.execute(
+                            "INSERT INTO alumnos (nie, nombre, apellidos, tramo, bilingue) VALUES (%s, %s, %s, %s, %s)",
+                            (nie, nombre, apellidos, tramo_str, bilingue_str))
                         self.conexion.commit()
+
                     except ValueError as e:
-                        print(f"Error al procesar la línea: {line.strip()} - {e}")
+                        print(f"Error al procesar la línea (ValueError): '{stripped_line}' - {e}")
                         self.conexion.rollback()
+                    except IndexError as e:
+                        print(f"Error al procesar la línea (IndexError): '{stripped_line}' - {e}")
+                        self.conexion.rollback()
+                    except Exception as e:
+                        print(f"Ocurrió un error inesperado en la línea: '{stripped_line}' - {e}")
+                        self.conexion.rollback()
+
         except FileNotFoundError:
             print(f"El archivo '{archivo_csv}' no fue encontrado.")
         except Exception as e:
-            print(f"Ocurrió un error durante la carga de alumnos del nuevo curso: {e}")
+            print(f"Ocurrió un error general durante la carga de alumnos del nuevo curso: {e}")
             if self.conexion:
                 self.conexion.rollback()
+
